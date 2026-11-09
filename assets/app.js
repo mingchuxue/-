@@ -5,6 +5,7 @@
   var DATA = window.CIYUN_DATA || { words: [], books: [] };
   var WORDS = DATA.words;
   var BOOKS = DATA.books;
+  var RANK = DATA.rank || null;   // usage-frequency rank per word (0 = most common)
   var BOOK_MAP = {};
   BOOKS.forEach(function (b) { BOOK_MAP[b.id] = b; });
   var KEY_INDEX = {};
@@ -18,7 +19,7 @@
   };
   var DEFAULTS = {
     accent: 'us', autoPlay: true, volume: 80, keySound: false, mode: 'normal', showPhonetic: true,
-    showWord: false, showExtras: true, wrongMode: 'block', repeat: 1, chapterSize: 20
+    showWord: false, ghost: false, showExtras: true, wrongMode: 'block', repeat: 1, chapterSize: 20
   };
   var settings = Object.assign({}, DEFAULTS, store.get('settings', {}));
   var stats = store.get('stats', {});        // word(lower) -> {a, e, h, c, t, m}
@@ -56,12 +57,20 @@
   /* ================= books & chapters ================= */
   function bookState(id) {
     var b = progress.books[id];
-    if (!b) { b = progress.books[id] = { order: 'alpha', seed: 1 + Math.floor(Math.random() * 1e9), chapter: 0, pos: 0 }; }
+    if (!b) { b = progress.books[id] = { order: 'freq', seed: 1 + Math.floor(Math.random() * 1e9), chapter: 0, pos: 0 }; }
+    else if (b.order !== 'freq' && b.order !== 'random') { b.order = 'freq'; b.chapter = 0; b.pos = 0; }   // migrate old alphabetical order
+    if (!b.seed) b.seed = 1 + Math.floor(Math.random() * 1e9);
     return b;
+  }
+  var freqCache = {};
+  function freqIds(id) {
+    var book = BOOK_MAP[id];
+    if (!RANK) return book.ids;
+    return freqCache[id] || (freqCache[id] = book.ids.slice().sort(function (a, b) { return (RANK[a] - RANK[b]) || (a - b); }));
   }
   function orderedIds(id) {
     var book = BOOK_MAP[id]; var st = bookState(id);
-    return st.order === 'random' ? shuffled(book.ids, st.seed) : book.ids;
+    return st.order === 'random' ? shuffled(book.ids, st.seed) : freqIds(id);
   }
   function chaptersOf(id) {
     var ids = orderedIds(id), size = +settings.chapterSize, out = [];
@@ -313,6 +322,7 @@
       else {
         if (i === W.typed.length + W.bad.length) cls += ' cur';
         if (revealing && c !== ' ') { cls += ' hint'; shown = c; }
+        else if (settings.ghost && c !== ' ') { cls += ' ghost'; shown = c; }
       }
       html += '<span class="' + cls + '"><span class="ch">' + (shown === ' ' ? '&nbsp;' : esc(shown)) + '</span></span>';
     }

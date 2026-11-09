@@ -32,8 +32,9 @@
 - **不区分大小写**；短语要输入空格，缩写要输入点号（如 `a.m.`）。
 - **发音**：每个词出现时自动朗读一次，点击听筒或按 `Ctrl/⌘ + J` 再听一次。英音 / 美音可切换。真人发音来自有道词典在线音频，加载失败或离线时自动改用浏览器自带的语音合成。
 - **提示**：按 `Tab` 短暂显示单词，这个词会记为「看过提示」并收进错词本。也可以开启「常显单词」跟着打。
+- **虚化字母**：设置里打开「显示虚化字母」后，未输入的字母以淡色虚影显示，方便对照练习盲打；默认关闭。
 - **两种模式**：释义模式（释义 + 词性 + 音标）；默写模式（隐藏释义，只听发音、看音标，打完后显示释义）。
-- **章节**：按字母顺序或乱序（固定随机种子，可重新打乱）分章，每章 10 / 20 / 50 词可调。章节面板显示每章完成情况和正确率，可预览本章单词。
+- **章节**：按词频（最常用的词排在前面，默认）或随机（固定随机种子，可重新打乱）分章，每章 10 / 20 / 50 词可调。章节面板显示每章完成情况和正确率，可预览本章单词。
 - **每词重复**：每个词可连续打 1 / 3 / 5 遍，加深记忆。
 - **输错处理**（可选）：标红并撤回（默认，像金山打字一样只撤回错字）/ 整词重打 / 保留错字，需要退格删除。
 - **实时统计**：用时（只计算实际打字时间）、词/分、正确率、本章进度。
@@ -79,6 +80,7 @@ screenshots/          界面截图
 - [RealKai42/qwerty-learner](https://github.com/RealKai42/qwerty-learner)：`GaoKao_3500.json`（高考 3500 词表）、`GaoZhongluan_2_T.json`、`PEPGaoZhong_1~11_T.json`（人教版高中教材分册词表）
 - [kajweb/dict](https://github.com/kajweb/dict)：有道词书数据 `GaoZhong_2`、`GaoZhong_3`（高中词汇，含英美音标、词性释义、例句、短语、助记），以及 `ChuZhong`、`CET4`、`CET6`、`KaoYan` 词书（只用来补全音标和释义）
 - [KyleBing/english-vocabulary](https://github.com/KyleBing/english-vocabulary)：高中词表，用于核对收词范围
+- [wordfreq](https://github.com/rspeer/wordfreq)：英语词频（Zipf 频率），用于「按词频」排序
 - 在线发音：有道词典 `dict.youdao.com/dictvoice`
 
 ### 处理说明
@@ -89,7 +91,7 @@ screenshots/          界面截图
 4. 词性统一写成 n. / v. / vt. / vi. / adj. / adv. / prep. / conj. / pron. / num. / art. / int. / aux. / abbr.，短语标为「词组」。
 5. 音标统一使用 ˈ ˌ ː 符号。缺音标的复合词按组成词拼合（如 bus stop），全大写缩写按字母读音生成。
 
-重新构建：把上述原始数据放进 `raw/`（扩展词书放在 `raw/extra/`），或者设置环境变量 `CIYUN_RAW` 指向原始数据目录，然后运行 `python3 tools/build_data.py`。
+重新构建：把上述原始数据放进 `raw/`（扩展词书放在 `raw/extra/`），或者设置环境变量 `CIYUN_RAW` 指向原始数据目录，然后运行 `python3 tools/build_data.py`（词频排名由 `tools/add_freq.py` 生成，需要 `pip install wordfreq`）。
 
 ## 已知限制
 
