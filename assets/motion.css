@@ -8,9 +8,10 @@
 }
 .m-ind-line { z-index: 1; }
 .m-ind-host:not(.m-line-host) > .m-act { background-color: transparent !important; background-image: none !important; border-color: transparent !important; box-shadow: none !important; }
+.m-deep-host .m-act { background-color: transparent !important; background-image: none !important; border-color: transparent !important; box-shadow: none !important; }
 .m-line-host > .m-act::after { opacity: 0 !important; }
 .m-ind-host > * { transition-property: color, background-color, border-color, opacity, box-shadow; transition-duration: .2s; }
-.m-probe > *, .m-probe > *::after { transition: none !important; }
+.m-probe > *, .m-probe > *::after, .m-probe .m-act { transition: none !important; }
 .m-theming, .m-theming *, .m-theming *::before, .m-theming *::after {
   transition: background-color .32s ease, color .32s ease, border-color .32s ease, fill .32s ease, stroke .32s ease !important;
 }

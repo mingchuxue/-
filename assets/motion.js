@@ -20,6 +20,7 @@
 
   /* ---------- 选项指示条 ---------- */
   function activeOf(host, t) {
+    if (t.deep) return host.querySelector(t.item + t.active);
     var kids = arr(host.children);
     for (var i = 0; i < kids.length; i++) {
       var k = kids[i];
@@ -33,6 +34,8 @@
   function probe(host, act, t) {
     host.classList.add("m-probe");
     host.classList.remove("m-ind-host");
+    var deep = host.classList.contains("m-deep-host");
+    if (deep) host.classList.remove("m-deep-host");
     var s = {};
     if (t.mode === "bar") {
       s.bg = getComputedStyle(act).color;
@@ -58,6 +61,7 @@
       s.bs = c.borderTopStyle;
     }
     host.classList.add("m-ind-host");
+    if (deep) host.classList.add("m-deep-host");
     void host.offsetWidth;
     host.classList.remove("m-probe");
     return s;
@@ -78,6 +82,7 @@
       if (getComputedStyle(host).position === "static") host.classList.add("m-rel");
       host.classList.add("m-ind-host");
       if (t.mode === "line") host.classList.add("m-line-host");
+      if (t.deep) host.classList.add("m-deep-host");
       if (sizeObs) sizeObs.observe(host);
     }
     if (!act || !act.offsetWidth) {
@@ -99,14 +104,19 @@
       }
     }
     var s2 = host._mStyle;
-    var g;
+    var g, ox = act.offsetLeft, oy = act.offsetTop;
+    if (act.offsetParent !== host) {
+      var ra = act.getBoundingClientRect(), rh = host.getBoundingClientRect();
+      ox = Math.round(ra.left - rh.left - host.clientLeft + host.scrollLeft);
+      oy = Math.round(ra.top - rh.top - host.clientTop + host.scrollTop);
+    }
     if (t.mode === "bar") {
       var bw = t.w || 20;
-      g = { x: act.offsetLeft + (act.offsetWidth - bw) / 2, y: t.pos === "bottom" ? act.offsetTop + act.offsetHeight - s2.h : act.offsetTop + (t.top || 0), w: bw, h: s2.h };
+      g = { x: ox + (act.offsetWidth - bw) / 2, y: t.pos === "bottom" ? oy + act.offsetHeight - s2.h : oy + (t.top || 0), w: bw, h: s2.h };
     } else if (t.mode === "line") {
-      g = { x: act.offsetLeft + s2.l, y: act.offsetTop + act.offsetHeight - s2.b - s2.h, w: Math.max(4, act.offsetWidth - s2.l - s2.r), h: s2.h };
+      g = { x: ox + s2.l, y: oy + act.offsetHeight - s2.b - s2.h, w: Math.max(4, act.offsetWidth - s2.l - s2.r), h: s2.h };
     } else {
-      g = { x: act.offsetLeft, y: act.offsetTop, w: act.offsetWidth, h: act.offsetHeight };
+      g = { x: ox, y: oy, w: act.offsetWidth, h: act.offsetHeight };
     }
     var prev = host._mGeo;
     if (prev && ind._mPlaced && prev.x === g.x && prev.y === g.y && prev.w === g.w && prev.h === g.h && ind.style.opacity === "1") return;
@@ -199,6 +209,18 @@
     if (fresh) rectCache = null;
   }
 
+  var pageArmed = true;
+  function runPage() {
+    if (!cfg.page || !pageArmed) return;
+    var c = document.querySelector(cfg.page);
+    if (!c || !c.children.length) return;
+    pageArmed = false;
+    if (still()) return;
+    arr(c.children).slice(0, cfg.pageCap || 8).forEach(function (el, i) {
+      el.animate([{ opacity: 0, translate: "0 10px" }, { opacity: 1, translate: "0 0" }], { duration: 300, delay: i * 40, easing: EASE, fill: "backwards" });
+    });
+  }
+
   /* ---------- 视图切换 ---------- */
   function shown(el) {
     if (el.hidden) return false;
@@ -223,7 +245,7 @@
   }
 
   /* ---------- 数字滚动 ---------- */
-  var NUM = /\d[\d,]*(\.\d+)?/g;
+  var NUM = /\d[\d,]*(?:\.\d+)?/g;
   function runCounters() {
     if (!cfg.counters) return;
     each(cfg.counters, function (el) {
@@ -376,6 +398,7 @@
     queued = false;
     try { scanTabs(); } catch (e) {}
     try { runViews(); } catch (e) {}
+    try { runPage(); } catch (e) {}
     try { runLists(); } catch (e) {}
     try { runCounters(); } catch (e) {}
     try { runCountUp(); } catch (e) {}
@@ -416,7 +439,13 @@
     document.addEventListener("pointercancel", onUp, true);
     document.addEventListener("click", onClick, true);
     if (cfg.keyCache !== false) document.addEventListener("keydown", function (e) { if (!e.repeat && !/^(INPUT|TEXTAREA)$/.test(e.target.tagName || "")) cacheRects(); }, true);
-    addEventListener("hashchange", cacheRects, true);
+    addEventListener("hashchange", function () {
+      if (cfg.routeReset) { listKeys.clear(); rectCache = null; } else cacheRects();
+      pageArmed = true;
+      schedule();
+    }, true);
+    document.addEventListener("change", cacheRects, true);
+    document.addEventListener("input", function (e) { if (e.target && e.target.type === "search") cacheRects(); }, true);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
     if (cfg.views) each(cfg.views, function (v) { viewState.set(v, shown(v)); });
     schedule();
