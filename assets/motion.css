@@ -1,0 +1,35 @@
+/* 界面动效 */
+:where(.m-rel) { position: relative; }
+.m-ind-host { isolation: isolate; }
+.m-ind {
+  position: absolute; left: 0; top: 0; z-index: -1; pointer-events: none; box-sizing: border-box;
+  opacity: 0; will-change: transform;
+  transition: transform .3s cubic-bezier(.22,.8,.24,1), width .3s cubic-bezier(.22,.8,.24,1), height .3s cubic-bezier(.22,.8,.24,1), background-color .2s, opacity .2s;
+}
+.m-ind-line { z-index: 1; }
+.m-ind-host:not(.m-line-host) > .m-act { background-color: transparent !important; background-image: none !important; border-color: transparent !important; box-shadow: none !important; }
+.m-line-host > .m-act::after { opacity: 0 !important; }
+.m-ind-host > * { transition-property: color, background-color, border-color, opacity, box-shadow; transition-duration: .2s; }
+.m-probe > *, .m-probe > *::after { transition: none !important; }
+.m-theming, .m-theming *, .m-theming *::before, .m-theming *::after {
+  transition: background-color .32s ease, color .32s ease, border-color .32s ease, fill .32s ease, stroke .32s ease !important;
+}
+dialog[open] { animation: m-dlg-in .26s cubic-bezier(.22,.8,.24,1); }
+dialog[open]::backdrop { animation: m-fade-in .26s ease-out; }
+@keyframes m-dlg-in { from { opacity: 0; translate: 0 14px; scale: .98; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes m-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes m-rise-in { from { opacity: 0; translate: 0 10px; } to { opacity: 1; translate: 0 0; } }
+@keyframes m-pop-in { 0% { opacity: 0; scale: .9; } 60% { opacity: 1; scale: 1.03; } 100% { scale: 1; } }
+.m-skel { position: relative; overflow: hidden; background: rgba(128,128,128,.13); border-radius: 6px; }
+.m-skel::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent); transform: translateX(-100%); animation: m-shimmer 1.25s ease-in-out infinite; }
+@keyframes m-shimmer { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .m-ind { transition: none !important; }
+  .m-skel::after { animation: none; }
+  dialog[open], dialog[open]::backdrop { animation: none; }
+}
+
+/* 本站细节 */
+.badge:not([hidden]) { animation: m-pop-in .3s cubic-bezier(.22,.8,.24,1); }
+.mini-btn.on .ic { animation: m-pop-in .32s cubic-bezier(.22,.8,.24,1); }
+@media (prefers-reduced-motion: reduce) { .badge, .mini-btn .ic { animation: none !important; } }
